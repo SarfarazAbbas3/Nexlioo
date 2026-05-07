@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexlio – Next Level Digital Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1a0aff;
+    --indigo: #3b1fff;
+    --purple: #8b00ff;
+    --violet: #c000ff;
+    --pink: #e040fb;
+    --cyan: #00d4ff;
+    --dark: #050010;
+    --darker: #020008;
+    --card-bg: rgba(20,5,60,0.7);
+    --border: rgba(140,0,255,0.25);
+    --glow-blue: 0 0 30px rgba(26,10,255,0.5);
+    --glow-purple: 0 0 30px rgba(139,0,255,0.5);
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.4);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--darker);
+    color: #e0d0ff;
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  #cursor { position:fixed; width:12px; height:12px; background:var(--cyan); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.1s; box-shadow: 0 0 15px var(--cyan); }
+  #cursor-ring { position:fixed; width:36px; height:36px; border:2px solid rgba(139,0,255,0.6); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.15s ease; }
+
+  /* ANIMATED BACKGROUND */
+  .bg-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; overflow:hidden; }
+  .bg-canvas canvas { width:100%; height:100%; }
+
+  /* GRID OVERLAY */
+  .grid-overlay {
+    position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(139,0,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,0,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top:0; left:0; width:100%; z-index:100;
+    padding: 18px 60px;
+    display:flex; align-items:center; justify-content:space-between;
+    background: rgba(2,0,8,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display:flex; align-items:center; gap:12px; }
+  .nav-logo img { height:42px; filter: drop-shadow(0 0 10px rgba(139,0,255,0.6)); }
+  .nav-links { display:flex; gap:36px; list-style:none; }
+  .nav-links a {
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color:#a080d0; text-decoration:none; transition:all 0.3s;
+    position:relative;
+  }
+  .nav-links a::after {
+    content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px;
+    background:linear-gradient(90deg,var(--cyan),var(--violet)); transition:width 0.3s;
+  }
+  .nav-links a:hover { color:#fff; text-shadow: 0 0 10px var(--cyan); }
+  .nav-links a:hover::after { width:100%; }
+  .nav-cta {
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:2px; padding:10px 24px;
+    background:linear-gradient(135deg,var(--blue),var(--violet));
+    border:none; border-radius:4px; color:#fff; cursor:none; transition:all 0.3s;
+    box-shadow: 0 0 20px rgba(139,0,255,0.3);
+  }
+  .nav-cta:hover { box-shadow: 0 0 40px rgba(139,0,255,0.7); transform:scale(1.05); }
+
+  /* HERO */
+  .hero {
+    position:relative; z-index:10; min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:120px 40px 80px;
+  }
+  .hero-tag {
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:4px; text-transform:uppercase;
+    color:var(--cyan); margin-bottom:24px;
+    padding:8px 20px; border:1px solid rgba(0,212,255,0.3); border-radius:20px;
+    background:rgba(0,212,255,0.05);
+    animation: fadeDown 0.8s ease both;
+  }
+  .hero h1 {
+    font-family:'Orbitron',sans-serif; font-size:clamp(48px,8vw,110px); font-weight:900;
+    line-height:1; letter-spacing:-2px; margin-bottom:16px;
+    background:linear-gradient(135deg, #fff 0%, var(--cyan) 30%, var(--violet) 60%, var(--pink) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    animation: fadeDown 0.8s 0.2s ease both;
+    filter: drop-shadow(0 0 40px rgba(139,0,255,0.3));
+  }
+  .hero-sub {
+    font-family:'Orbitron',sans-serif; font-size:clamp(12px,2vw,18px); letter-spacing:6px;
+    color:#a080c0; margin-bottom:32px; text-transform:uppercase;
+    animation: fadeDown 0.8s 0.4s ease both;
+  }
+  .hero-desc {
+    max-width:620px; font-size:18px; font-weight:300; line-height:1.8; color:#c0a0e0;
+    margin-bottom:48px; animation: fadeDown 0.8s 0.6s ease both;
+  }
+  .hero-btns { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; animation: fadeDown 0.8s 0.8s ease both; }
+  .btn-primary {
+    font-family:'Orbitron',sans-serif; font-size:12px; letter-spacing:2px; padding:16px 36px;
+    background:linear-gradient(135deg,var(--blue),var(--violet));
+    border:none; border-radius:4px; color:#fff; cursor:none; transition:all 0.3s;
+    box-shadow: 0 0 30px rgba(139,0,255,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    text-transform:uppercase;
+  }
+  .btn-primary:hover { transform:translateY(-3px); box-shadow: 0 8px 50px rgba(139,0,255,0.7); }
+  .btn-ghost {
+    font-family:'Orbitron',sans-serif; font-size:12px; letter-spacing:2px; padding:16px 36px;
+    background:transparent; border:1px solid rgba(139,0,255,0.5); border-radius:4px;
+    color:#c0a0e0; cursor:none; transition:all 0.3s; text-transform:uppercase;
+  }
+  .btn-ghost:hover { border-color:var(--cyan); color:#fff; box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+
+  /* FLOATING ORBS */
+  .orb {
+    position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; animation:float 8s ease-in-out infinite;
+  }
+  .orb1 { width:500px;height:500px; background:rgba(139,0,255,0.12); top:-100px; right:-150px; animation-delay:0s; }
+  .orb2 { width:400px;height:400px; background:rgba(0,100,255,0.1); bottom:-100px; left:-100px; animation-delay:-4s; }
+  .orb3 { width:300px;height:300px; background:rgba(192,0,255,0.08); top:50%; left:60%; animation-delay:-2s; }
+
+  /* STATS */
+  .stats {
+    position:relative; z-index:10; padding:60px 60px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--border); border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  }
+  .stat-item {
+    background:var(--darker); padding:40px 30px; text-align:center; transition:all 0.3s;
+  }
+  .stat-item:hover { background:rgba(139,0,255,0.08); }
+  .stat-num {
+    font-family:'Orbitron',sans-serif; font-size:48px; font-weight:900;
+    background:linear-gradient(135deg,var(--cyan),var(--violet)); -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .stat-label { font-size:14px; color:#8060a0; letter-spacing:2px; text-transform:uppercase; margin-top:8px; }
+
+  /* SECTION COMMON */
+  section { position:relative; z-index:10; }
+  .section-header { text-align:center; margin-bottom:70px; }
+  .section-tag {
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:4px; color:var(--cyan);
+    text-transform:uppercase; margin-bottom:16px; display:block;
+  }
+  .section-title {
+    font-family:'Orbitron',sans-serif; font-size:clamp(28px,4vw,52px); font-weight:900;
+    background:linear-gradient(135deg,#fff,var(--violet)); -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1;
+  }
+  .section-desc { color:#a080c0; font-size:17px; max-width:560px; margin:16px auto 0; line-height:1.8; }
+
+  /* SERVICES */
+  .services { padding:100px 60px; }
+  .services-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; max-width:1400px; margin:0 auto; }
+  .service-card {
+    background:var(--card-bg); border:1px solid var(--border); border-radius:12px;
+    padding:40px 32px; transition:all 0.4s; position:relative; overflow:hidden; cursor:none;
+  }
+  .service-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, var(--blue), var(--violet), var(--pink));
+    transform:scaleX(0); transform-origin:left; transition:transform 0.4s;
+  }
+  .service-card:hover { transform:translateY(-8px); border-color:rgba(139,0,255,0.5); box-shadow: 0 20px 60px rgba(139,0,255,0.2); }
+  .service-card:hover::before { transform:scaleX(1); }
+  .service-icon {
+    width:64px; height:64px; border-radius:12px; margin-bottom:24px;
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+    background:linear-gradient(135deg,rgba(26,10,255,0.3),rgba(139,0,255,0.3));
+    border:1px solid rgba(139,0,255,0.3);
+    transition:all 0.4s;
+  }
+  .service-card:hover .service-icon { box-shadow: 0 0 30px rgba(139,0,255,0.5); transform:scale(1.1); }
+  .service-name { font-family:'Orbitron',sans-serif; font-size:15px; font-weight:700; color:#fff; margin-bottom:12px; letter-spacing:1px; }
+  .service-desc { color:#8060a0; font-size:15px; line-height:1.7; }
+  .service-arrow { margin-top:20px; color:var(--violet); font-size:20px; transition:transform 0.3s; display:inline-block; }
+  .service-card:hover .service-arrow { transform:translateX(8px); }
+
+  /* PROCESS */
+  .process { padding:100px 60px; background:rgba(10,0,30,0.5); }
+  .process-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:0; max-width:1200px; margin:0 auto; position:relative; }
+  .process-steps::before {
+    content:''; position:absolute; top:40px; left:10%; right:10%; height:1px;
+    background:linear-gradient(90deg, transparent, var(--violet), var(--cyan), var(--violet), transparent);
+    z-index:0;
+  }
+  .step { text-align:center; padding:0 24px; position:relative; z-index:1; }
+  .step-num {
+    width:80px; height:80px; border-radius:50%; margin:0 auto 24px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; color:#fff;
+    background:linear-gradient(135deg,var(--blue),var(--violet));
+    box-shadow: 0 0 30px rgba(139,0,255,0.5);
+    border:2px solid rgba(255,255,255,0.1);
+    transition:all 0.3s;
+  }
+  .step:hover .step-num { transform:scale(1.1); box-shadow: 0 0 50px rgba(139,0,255,0.8); }
+  .step-title { font-family:'Orbitron',sans-serif; font-size:13px; color:#fff; margin-bottom:10px; letter-spacing:1px; }
+  .step-desc { color:#8060a0; font-size:14px; line-height:1.6; }
+
+  /* PORTFOLIO/MARQUEE */
+  .marquee-section { padding:80px 0; overflow:hidden; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .marquee-track { display:flex; gap:40px; animation:marquee 20s linear infinite; width:max-content; }
+  .marquee-item {
+    flex-shrink:0; padding:16px 32px; border:1px solid var(--border); border-radius:6px;
+    font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:2px; color:#8060a0;
+    background:var(--card-bg); white-space:nowrap; display:flex; align-items:center; gap:12px;
+  }
+  .marquee-dot { width:6px;height:6px; border-radius:50%; background:var(--cyan); flex-shrink:0; }
+
+  /* WHY US */
+  .why { padding:100px 60px; }
+  .why-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; max-width:1200px; margin:0 auto; align-items:center; }
+  .why-visual {
+    position:relative; height:500px; display:flex; align-items:center; justify-content:center;
+  }
+  .hexagon-grid { position:relative; width:400px; height:400px; }
+  .hex {
+    position:absolute; width:100px; height:115px; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    display:flex; align-items:center; justify-content:center; font-size:24px; transition:all 0.3s;
+    cursor:none;
+  }
+  .hex:hover { transform:scale(1.1); filter:brightness(1.5); }
+  .hex1 { background:linear-gradient(135deg,rgba(26,10,255,0.4),rgba(139,0,255,0.4)); top:0; left:150px; animation:pulse 3s 0s infinite; }
+  .hex2 { background:linear-gradient(135deg,rgba(139,0,255,0.4),rgba(192,0,255,0.4)); top:120px; left:40px; animation:pulse 3s 0.5s infinite; }
+  .hex3 { background:linear-gradient(135deg,rgba(0,212,255,0.3),rgba(26,10,255,0.4)); top:120px; left:260px; animation:pulse 3s 1s infinite; }
+  .hex4 { background:linear-gradient(135deg,rgba(224,64,251,0.3),rgba(139,0,255,0.4)); top:240px; left:150px; animation:pulse 3s 1.5s infinite; }
+  .hex5 { background:linear-gradient(135deg,rgba(26,10,255,0.3),rgba(0,212,255,0.3)); top:240px; left:40px; animation:pulse 3s 2s infinite; }
+  .hex6 { background:linear-gradient(135deg,rgba(192,0,255,0.3),rgba(224,64,251,0.3)); top:240px; left:260px; animation:pulse 3s 2.5s infinite; }
+  .why-points { display:flex; flex-direction:column; gap:28px; }
+  .why-point {
+    display:flex; gap:20px; align-items:flex-start; padding:24px;
+    border:1px solid transparent; border-radius:10px; transition:all 0.3s;
+  }
+  .why-point:hover { border-color:var(--border); background:var(--card-bg); }
+  .why-icon { font-size:28px; flex-shrink:0; width:48px; text-align:center; }
+  .why-text h3 { font-family:'Orbitron',sans-serif; font-size:14px; color:#fff; margin-bottom:8px; letter-spacing:1px; }
+  .why-text p { color:#8060a0; font-size:14px; line-height:1.6; }
+
+  /* TESTIMONIALS */
+  .testimonials { padding:100px 60px; background:rgba(10,0,30,0.5); }
+  .testi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:24px; max-width:1200px; margin:0 auto; }
+  .testi-card {
+    background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:36px;
+    position:relative; transition:all 0.3s;
+  }
+  .testi-card:hover { transform:translateY(-5px); border-color:rgba(139,0,255,0.4); }
+  .testi-quote { font-size:48px; color:rgba(139,0,255,0.4); font-family:Georgia,serif; line-height:1; margin-bottom:16px; }
+  .testi-text { color:#c0a0e0; font-size:15px; line-height:1.8; margin-bottom:24px; font-style:italic; }
+  .testi-author { display:flex; align-items:center; gap:14px; }
+  .testi-avatar { width:46px;height:46px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--violet)); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .testi-name { font-family:'Orbitron',sans-serif; font-size:12px; color:#fff; }
+  .testi-role { font-size:13px; color:#6040a0; }
+  .stars { color:var(--pink); font-size:14px; margin-bottom:16px; letter-spacing:2px; }
+
+  /* CONTACT */
+  .contact { padding:100px 60px; }
+  .contact-inner { max-width:800px; margin:0 auto; text-align:center; }
+  .contact-card {
+    background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:70px;
+    position:relative; overflow:hidden;
+  }
+  .contact-card::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 0%, rgba(139,0,255,0.1), transparent 70%);
+    pointer-events:none;
+  }
+  .contact-card h2 { font-family:'Orbitron',sans-serif; font-size:36px; color:#fff; margin-bottom:16px; }
+  .contact-card p { color:#a080c0; font-size:17px; margin-bottom:40px; line-height:1.7; }
+  .contact-form { display:flex; flex-direction:column; gap:16px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-input {
+    width:100%; padding:16px 20px; background:rgba(139,0,255,0.08); border:1px solid var(--border);
+    border-radius:6px; color:#fff; font-family:'Rajdhani',sans-serif; font-size:15px;
+    transition:all 0.3s; outline:none;
+  }
+  .form-input:focus { border-color:var(--violet); box-shadow: 0 0 20px rgba(139,0,255,0.2); }
+  .form-input::placeholder { color:#6040a0; }
+  textarea.form-input { min-height:120px; resize:vertical; }
+  .contact-info { display:flex; justify-content:center; gap:40px; margin-top:40px; flex-wrap:wrap; }
+  .contact-item { display:flex; align-items:center; gap:12px; color:#8060a0; font-size:15px; }
+  .contact-item span:first-child { font-size:22px; }
+
+  /* FOOTER */
+  footer {
+    position:relative; z-index:10; padding:60px; border-top:1px solid var(--border);
+    background:rgba(2,0,8,0.95);
+    display:flex; flex-direction:column; align-items:center; gap:30px; text-align:center;
+  }
+  .footer-logo img { height:50px; filter: drop-shadow(0 0 15px rgba(139,0,255,0.5)); }
+  .footer-links { display:flex; gap:32px; flex-wrap:wrap; justify-content:center; }
+  .footer-links a { color:#6040a0; font-size:13px; text-decoration:none; letter-spacing:1px; transition:color 0.3s; }
+  .footer-links a:hover { color:var(--cyan); }
+  .footer-copy { color:#4020608; font-size:13px; color:#4a2a6a; }
+  .footer-glow { width:300px; height:1px; background:linear-gradient(90deg,transparent,var(--violet),transparent); }
+
+  /* SCROLL REVEAL */
+  .reveal { opacity:0; transform:translateY(40px); transition:all 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-30px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes float { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-30px) rotate(5deg); } }
+  @keyframes pulse { 0%,100% { opacity:0.7; } 50% { opacity:1; } }
+  @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+  @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+  /* PARTICLE GLOW */
+  .glow-line {
+    position:absolute; width:1px; background:linear-gradient(transparent,var(--violet),transparent);
+    animation:fallLine 4s linear infinite; pointer-events:none;
+  }
+
+  /* MOBILE */
+  @media (max-width:768px) {
+    nav { padding:16px 20px; }
+    .nav-links { display:none; }
+    .hero { padding:100px 24px 60px; }
+    .stats { grid-template-columns:repeat(2,1fr); padding:40px 20px; }
+    .services, .why, .testimonials, .contact, .process { padding:70px 24px; }
+    .why-grid { grid-template-columns:1fr; }
+    .why-visual { display:none; }
+    .form-row { grid-template-columns:1fr; }
+    footer { padding:40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- BG CANVAS -->
+<div class="bg-canvas"><canvas id="bgCanvas"></canvas></div>
+<div class="grid-overlay"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="/mnt/user-data/uploads/nexlio_logo_png.png" alt="Nexlio" onerror="this.style.display='none'">
+    <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(135deg,#fff,#8b00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">NEXLIO</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get Started</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="hero-tag">✦ Welcome to the Future of Digital</div>
+  <h1 id="heroTitle">NEXLIO</h1>
+  <p class="hero-sub">Next Level Digital Solutions</p>
+  <p class="hero-desc">We craft extraordinary digital experiences — from cutting-edge web & app development to stunning visuals, branding, and beyond. Elevate your brand to the next level.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Explore Services</button>
+    <button class="btn-ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Let's Connect →</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="200">0</div>
+    <div class="stat-label">Projects Delivered</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="150">0</div>
+    <div class="stat-label">Happy Clients</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="8">0</div>
+    <div class="stat-label">Services Offered</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="5">0</div>
+    <div class="stat-label">Years Experience</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="section-header reveal">
+    <span class="section-tag">✦ What We Do</span>
+    <h2 class="section-title">Our Digital Services</h2>
+    <p class="section-desc">Complete digital solutions under one roof — built to elevate your brand and drive real results.</p>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <div class="service-icon">💻</div>
+      <div class="service-name">Web & App Development</div>
+      <div class="service-desc">High-performance websites and mobile applications built with the latest technologies. Responsive, fast, and scalable.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🎨</div>
+      <div class="service-name">Graphics Design</div>
+      <div class="service-desc">Eye-catching visual designs that communicate your brand story. From social media creatives to complete design systems.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">✏️</div>
+      <div class="service-name">Vector Art</div>
+      <div class="service-desc">Professional vector illustrations and artwork — scalable, crisp, and stunning across all platforms and print sizes.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🏷️</div>
+      <div class="service-name">Branding</div>
+      <div class="service-desc">Complete brand identity creation — logos, color palettes, typography, style guides, and brand strategy for lasting impact.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🪡</div>
+      <div class="service-name">Embroidery Digitizing</div>
+      <div class="service-desc">Precise and detailed embroidery digitizing that translates your artwork into perfect stitched reality for apparel and merchandise.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">📈</div>
+      <div class="service-name">Digital Marketing</div>
+      <div class="service-desc">Data-driven marketing strategies — SEO, social media, paid ads, and content marketing to grow your online presence.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🎬</div>
+      <div class="service-name">Video Editing</div>
+      <div class="service-desc">Cinematic video production and editing — reels, promos, explainers, and brand films that captivate your audience.</div>
+      <div class="service-arrow">→</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">✍️</div>
+      <div class="service-name">Content Creation</div>
+      <div class="service-desc">Compelling content strategy and creation — blogs, copy, social posts, and scripts that engage, convert, and inspire.</div>
+      <div class="service-arrow">→</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marquee">
+    <div class="marquee-item"><span class="marquee-dot"></span>Web Development</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>App Development</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Graphics Design</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Vector Art</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Branding</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Embroidery Digitizing</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Digital Marketing</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Video Editing</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Content Creation</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SEO & Growth</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Web Development</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>App Development</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Graphics Design</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Vector Art</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Branding</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Embroidery Digitizing</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Digital Marketing</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Video Editing</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Content Creation</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SEO & Growth</div>
+  </div>
+</div>
+
+<!-- PROCESS -->
+<section class="process" id="process">
+  <div class="section-header reveal">
+    <span class="section-tag">✦ How We Work</span>
+    <h2 class="section-title">Our Process</h2>
+    <p class="section-desc">A streamlined, transparent workflow that delivers results on time, every time.</p>
+  </div>
+  <div class="process-steps">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-title">Discovery</div>
+      <div class="step-desc">We understand your goals, audience, and vision through deep consultation.</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div class="step-title">Strategy</div>
+      <div class="step-desc">We craft a tailored roadmap and creative strategy to achieve your objectives.</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div class="step-title">Design</div>
+      <div class="step-desc">Pixel-perfect designs and prototypes reviewed with your feedback in mind.</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">04</div>
+      <div class="step-title">Develop</div>
+      <div class="step-desc">Clean, performant code and production-ready assets built to last.</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">05</div>
+      <div class="step-title">Launch</div>
+      <div class="step-desc">Seamless deployment with ongoing support, analytics, and optimization.</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why" id="why">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section-header reveal">
+      <span class="section-tag">✦ Why Choose Us</span>
+      <h2 class="section-title">The Nexlio Advantage</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-visual">
+        <div class="hexagon-grid">
+          <div class="hex hex1">🌐</div>
+          <div class="hex hex2">🎨</div>
+          <div class="hex hex3">📱</div>
+          <div class="hex hex4">🚀</div>
+          <div class="hex hex5">💡</div>
+          <div class="hex hex6">⚡</div>
+        </div>
+      </div>
+      <div class="why-points">
+        <div class="why-point reveal">
+          <div class="why-icon">⚡</div>
+          <div class="why-text">
+            <h3>Lightning Fast Delivery</h3>
+            <p>Agile workflows and dedicated teams mean your projects are delivered on schedule without compromising quality.</p>
+          </div>
+        </div>
+        <div class="why-point reveal">
+          <div class="why-icon">🎯</div>
+          <div class="why-text">
+            <h3>Results-Driven Approach</h3>
+            <p>Every decision is backed by data and strategy, ensuring your investment translates to measurable business growth.</p>
+          </div>
+        </div>
+        <div class="why-point reveal">
+          <div class="why-icon">🔮</div>
+          <div class="why-text">
+            <h3>Cutting-Edge Technology</h3>
+            <p>We use the latest tools, frameworks, and creative technologies to keep your brand ahead of the curve.</p>
+          </div>
+        </div>
+        <div class="why-point reveal">
+          <div class="why-icon">🤝</div>
+          <div class="why-text">
+            <h3>Dedicated Partnership</h3>
+            <p>We're not just a vendor — we're your long-term digital partner committed to your ongoing success.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="section-header reveal">
+    <span class="section-tag">✦ Client Stories</span>
+    <h2 class="section-title">What Clients Say</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-text">Nexlio transformed our brand completely. Their attention to detail and creativity is unmatched. Our sales doubled after the rebrand!</div>
+      <div class="testi-author">
+        <div class="testi-avatar">👤</div>
+        <div>
+          <div class="testi-name">Ahmed Raza</div>
+          <div class="testi-role">CEO, TechStart PK</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-text">The website they built for us is absolutely stunning. Fast, modern, and exactly what we envisioned. Professional team from start to finish.</div>
+      <div class="testi-author">
+        <div class="testi-avatar">👤</div>
+        <div>
+          <div class="testi-name">Sara Khan</div>
+          <div class="testi-role">Founder, StyleHouse</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-text">Their embroidery digitizing work is top-notch. Perfect stitch quality every time. Nexlio is our go-to for all digital needs now.</div>
+      <div class="testi-author">
+        <div class="testi-avatar">👤</div>
+        <div>
+          <div class="testi-name">Bilal Mahmood</div>
+          <div class="testi-role">Owner, EmbroidMe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">✦ Get In Touch</span>
+      <h2 class="section-title">Start Your Project</h2>
+      <p class="section-desc">Ready to take your brand to the next level? Let's build something extraordinary together.</p>
+    </div>
+    <div class="contact-card reveal">
+      <div class="contact-form">
+        <div class="form-row">
+          <input class="form-input" type="text" placeholder="Your Name">
+          <input class="form-input" type="email" placeholder="Email Address">
+        </div>
+        <input class="form-input" type="text" placeholder="Service Required (e.g. Web Development, Branding...)">
+        <textarea class="form-input" placeholder="Tell us about your project..."></textarea>
+        <button class="btn-primary" style="margin-top:8px;font-family:'Orbitron',sans-serif;letter-spacing:2px;cursor:none;" onclick="handleSubmit(this)">Send Message ✦</button>
+      </div>
+      <div class="contact-info">
+        <div class="contact-item"><span>📧</span><span>nexlio.info@gmail.com</span></div>
+        <div class="contact-item"><span>📱</span><span>+92 3283363738</span></div>
+        <div class="contact-item"><span>🌐</span><span><a href="http://www.nexlio.com" target="_blank">www.nexlio.com</a></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <img src="/mnt/user-data/uploads/nexlio_logo_png.png" alt="Nexlio" onerror="this.style.display='none'">
+  </div>
+  <div class="footer-glow"></div>
+  <div class="footer-links">
+    <a href="#services">Services</a>
+    <a href="#process">Process</a>
+    <a href="#why">About</a>
+    <a href="#testimonials">Reviews</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <p class="footer-copy">© 2025 Nexlio – Next Level Digital Solutions. All rights reserved.</p>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+});
+function animRing(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('button,a,.service-card,.testi-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cursor.style.transform='translate(-50%,-50%) scale(2)'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; ring.style.borderColor='rgba(0,212,255,0.8)'; });
+  el.addEventListener('mouseleave',()=>{ cursor.style.transform='translate(-50%,-50%) scale(1)'; ring.style.transform='translate(-50%,-50%) scale(1)'; ring.style.borderColor='rgba(139,0,255,0.6)'; });
+});
+
+// CANVAS BACKGROUND
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+
+const particles = [];
+for(let i=0;i<80;i++){
+  particles.push({
+    x:Math.random()*canvas.width, y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4,
+    r:Math.random()*2+0.5,
+    color:`hsl(${Math.random()>0.5?260:200},100%,${60+Math.random()*30}%)`
+  });
+}
+
+function drawCanvas(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // Connections
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<150){
+        ctx.strokeStyle=`rgba(139,0,255,${0.15*(1-d/150)})`;
+        ctx.lineWidth=0.5;
+        ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke();
+      }
+    }
+  }
+  // Dots
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>canvas.width) p.vx*=-1;
+    if(p.y<0||p.y>canvas.height) p.vy*=-1;
+    ctx.fillStyle=p.color;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+  });
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+// SCROLL REVEAL
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+},{threshold:0.15});
+revealEls.forEach(el=>observer.observe(el));
+
+// COUNTER ANIMATION
+function animateCounter(el){
+  const target=parseInt(el.getAttribute('data-target'));
+  let current=0;
+  const inc=target/60;
+  const timer=setInterval(()=>{
+    current+=inc;
+    if(current>=target){ el.textContent=target+'+'; clearInterval(timer); }
+    else { el.textContent=Math.floor(current); }
+  },25);
+}
+const counterObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ animateCounter(e.target); counterObserver.unobserve(e.target); }
+  });
+},{threshold:0.5});
+document.querySelectorAll('.stat-num').forEach(el=>counterObserver.observe(el));
+
+// FORM SUBMIT
+function handleSubmit(btn){
+  btn.textContent='Sending...';
+  btn.style.opacity='0.7';
+  setTimeout(()=>{
+    btn.textContent='✓ Message Sent!';
+    btn.style.background='linear-gradient(135deg,#00c853,#00e676)';
+    btn.style.opacity='1';
+    setTimeout(()=>{
+      btn.textContent='Send Message ✦';
+      btn.style.background='linear-gradient(135deg,var(--blue),var(--violet))';
+    },3000);
+  },1500);
+}
+
+// NAV ACTIVE STATE ON SCROLL
+window.addEventListener('scroll',()=>{
+  const nav=document.querySelector('nav');
+  nav.style.background = window.scrollY > 50 ? 'rgba(2,0,8,0.98)' : 'rgba(2,0,8,0.85)';
+});
+</script>
+</body>
+</html>
